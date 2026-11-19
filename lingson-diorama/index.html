@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>링스온 커뮤니티 디오라마</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#F4F6FB}
+a{color:#2340C8}a:hover{color:#182E96}
+.dio-hit{position:absolute;padding:0;margin:0;border:none;background:transparent;cursor:pointer;font-family:inherit}
+.dio-hit:hover .dio-shape{fill:#2340C8;fill-opacity:.14}
+.dio-hit:focus-visible .dio-shape{fill:#2340C8;fill-opacity:.22;stroke:#182E96;stroke-width:4}
+.dio-glow{animation:dio-glow 2s ease-in-out infinite}
+.dio-in{animation:dio-in .5s ease both}
+.dio-float{animation:dio-float 3.2s ease-in-out infinite}
+@keyframes dio-glow{0%,100%{fill-opacity:.16}50%{fill-opacity:.32}}
+@keyframes dio-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes dio-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@media (prefers-reduced-motion: reduce){.dio-glow,.dio-in,.dio-float{animation:none}}
+.lk-in{animation:lk-fade .6s ease both}
+.lk-out{animation:lk-fadeout .5s ease both}
+.lk-dark{animation:lk-darkoff 2.6s ease both}
+.lk-air{animation:lk-air 1.6s linear infinite}
+.lk-ping{transform-box:fill-box;transform-origin:50% 50%;animation:lk-ping 1.4s ease-out infinite}
+.lk-teeup2{animation:lk-teeup2 1s cubic-bezier(.2,.8,.3,1.2) both}
+@keyframes lk-fade{from{opacity:0}to{opacity:1}}
+@keyframes lk-fadeout{from{opacity:1}to{opacity:0}}
+@keyframes lk-darkoff{from{opacity:.9}to{opacity:0}}
+@keyframes lk-air{0%{transform:translateY(0);opacity:0}30%{opacity:1}100%{transform:translateY(40px);opacity:0}}
+@keyframes lk-ping{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.4);opacity:0}}
+@keyframes lk-teeup2{from{transform:translateY(56px)}to{transform:translateY(0)}}
+@media (prefers-reduced-motion: reduce){.lk-air,.lk-ping{animation:none}.lk-in,.lk-out,.lk-dark,.lk-teeup2{animation-duration:.01s;animation-delay:0s !important}}
+</style>
+
+</head><body>
+<div id="lingson-diorama" style="position:relative;width:100%;max-width:1440px;margin:0 auto;overflow:hidden">
+<div class="ld-stage" style="position:absolute;left:0;top:0;width:1440px;height:1100px;transform-origin:0 0"></div>
+</div>
+<!--
+  ✏️ 편집 안내 (자세한 내용은 편집가이드.md)
+  [A] 이 <template> 안 = 화면 모양 (사진 위 말풍선 <text> 글자, 층별 장비 표시, 사진 파일 경로)
+      {{ }} 로 감싼 부분은 아래 [B] 데이터에서 자동으로 채워지니 건드리지 마세요.
+-->
+<template id="lingson-diorama-tpl">
+<div style="width: 1440px; height: 1100px; box-sizing: border-box; font-family: 'Noto Sans KR', system-ui, sans-serif; color: #141A2E; background: #F4F6FB; word-break: keep-all; display: flex; flex-direction: column">
+
+<header style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 40px; background: #FFFFFF; border-bottom: 1px solid #DCE1EC">
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="width: 40px; height: 40px; border-radius: 10px; background: #2340C8; display: flex; align-items: center; justify-content: center">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5-9-5Z"></path><path d="m3 13 9 5 9-5"></path><path d="m3 18 9 5 9-5" opacity=".5"></path></svg>
+</div>
+<div style="display: flex; flex-direction: column">
+<span style="font-size: 18px; font-weight: 800; letter-spacing: -0.02em">링스온 커뮤니티 디오라마</span>
+<span style="font-size: 12px; color: #545D72">층별로 잘라 본 스마트 커뮤니티 미니어처</span>
+</div>
+</div>
+
+</header>
+
+<div style="flex: 1; min-height: 0; display: flex; gap: 0">
+
+<div style="position: relative; width: 580px; flex: none; background: #E9EDF5">
+<div style="position: absolute; left: 40px; top: 28px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 13px; font-weight: 700; color: #2340C8; letter-spacing: 0.08em">LINGS ON MINIATURE · {{floorCode}}</span>
+<span style="font-size: 20px; font-weight: 800; letter-spacing: -0.02em">{{floorTitle}}</span>
+</div>
+<div role="group" aria-label="층 선택" style="position: absolute; left: 40px; top: 100px; z-index: 2; display: flex; flex-wrap: wrap; gap: 6px; padding: 6px; border-radius: 12px; background: #FFFFFF; border: 1px solid #DCE1EC">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="6">
+<button type="button" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}" style="{{t.style}}">{{t.name}}</button>
+</sc-for>
+</div>
+<div style="position: absolute; left: 12px; top: 110px; width: 900px; height: 1000px; transform: scale(0.62); transform-origin: 0 0">
+<sc-if value="{{v.all}}" hint-placeholder-val="{{true}}">
+<svg viewBox="0 0 900 1000" width="900" height="1000" aria-hidden="true" style="position: absolute; inset: 0"><ellipse cx="450" cy="975" rx="360" ry="22" fill="#141A2E" fill-opacity=".08"></ellipse></svg>
+<img src="images/floor_all.png" alt="" style="position: absolute; left: 0; top: 0; width: 900px; height: 1000px">
+<div style="position: absolute; left: 77.0px; top: 916.4px; width: 80px; padding: 8px 0; border-radius: 10px; background: #141A2E; color: #FFFFFF; font-size: 22px; font-weight: 800; text-align: center">1F</div>
+<div style="position: absolute; left: 77.0px; top: 766.4px; width: 80px; padding: 8px 0; border-radius: 10px; background: #141A2E; color: #FFFFFF; font-size: 22px; font-weight: 800; text-align: center">45F</div>
+<div style="position: absolute; left: 77.0px; top: 616.4px; width: 80px; padding: 8px 0; border-radius: 10px; background: #141A2E; color: #FFFFFF; font-size: 22px; font-weight: 800; text-align: center">50F</div>
+<div style="position: absolute; left: 77.0px; top: 466.4px; width: 80px; padding: 8px 0; border-radius: 10px; background: #141A2E; color: #FFFFFF; font-size: 22px; font-weight: 800; text-align: center">60F</div>
+<div style="position: absolute; left: 77.0px; top: 316.4px; width: 80px; padding: 8px 0; border-radius: 10px; background: #141A2E; color: #FFFFFF; font-size: 22px; font-weight: 800; text-align: center">PH</div>
+</sc-if>
+<sc-if value="{{v.ph}}" hint-placeholder-val="{{false}}">
+<svg viewBox="0 0 900 1000" width="900" height="1000" aria-hidden="true" style="position: absolute; inset: 0"><ellipse cx="460" cy="800" rx="420" ry="26" fill="#141A2E" fill-opacity=".08"></ellipse></svg>
+<img src="images/floor_ph.png" alt="" style="position: absolute; left: 0; top: 0; width: 900px; height: 1000px">
+</sc-if>
+<sc-if value="{{v.f60}}" hint-placeholder-val="{{false}}">
+<svg viewBox="0 0 900 1000" width="900" height="1000" aria-hidden="true" style="position: absolute; inset: 0"><ellipse cx="460" cy="800" rx="420" ry="26" fill="#141A2E" fill-opacity=".08"></ellipse></svg>
+<img src="images/floor_60f.png" alt="" style="position: absolute; left: 0; top: 0; width: 900px; height: 1000px">
+</sc-if>
+<sc-if value="{{v.f50}}" hint-placeholder-val="{{false}}">
+<svg viewBox="0 0 900 1000" width="900" height="1000" aria-hidden="true" style="position: absolute; inset: 0"><ellipse cx="460" cy="800" rx="420" ry="26" fill="#141A2E" fill-opacity=".08"></ellipse></svg>
+<img src="images/floor_50f.png" alt="" style="position: absolute; left: 0; top: 0; width: 900px; height: 1000px">
+</sc-if>
+<sc-if value="{{v.f45}}" hint-placeholder-val="{{false}}">
+<svg viewBox="0 0 900 1000" width="900" height="1000" aria-hidden="true" style="position: absolute; inset: 0"><ellipse cx="460" cy="800" rx="420" ry="26" fill="#141A2E" fill-opacity=".08"></ellipse></svg>
+<img src="images/floor_45f.png" alt="" style="position: absolute; left: 0; top: 0; width: 900px; height: 1000px">
+</sc-if>
+<sc-if value="{{v.f1}}" hint-placeholder-val="{{false}}">
+<svg viewBox="0 0 900 1000" width="900" height="1000" aria-hidden="true" style="position: absolute; inset: 0"><ellipse cx="460" cy="800" rx="420" ry="26" fill="#141A2E" fill-opacity=".08"></ellipse></svg>
+<img src="images/floor_1f.png" alt="" style="position: absolute; left: 0; top: 0; width: 900px; height: 1000px">
+</sc-if>
+<sc-for list="{{hits}}" as="h" hint-placeholder-count="9">
+<button type="button" class="dio-hit" onClick="{{h.pick}}" aria-pressed="{{h.pressed}}" aria-label="{{h.aria}}" style="{{h.boxStyle}}">
+<svg width="{{h.w}}" height="{{h.h}}" aria-hidden="true" style="position: absolute; left: 0; top: 0; overflow: visible">
+<polygon class="{{h.shapeClass}}" points="{{h.pts}}" style="{{h.shapeStyle}}"></polygon>
+</svg>
+<span style="{{h.labStyle}}">{{h.name}}</span>
+</button>
+</sc-for>
+<sc-if value="{{v.ph}}" hint-placeholder-val="{{false}}">
+<div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none">
+<div style="position: absolute; left: 662.4px; top: 655.0px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">도어락</span></div>
+<div style="position: absolute; left: 474.0px; top: 337.5px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">에어컨</span></div>
+<div style="position: absolute; left: 191.6px; top: 522.5px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">침실</span></div>
+<div style="position: absolute; left: 531.6px; top: 532.5px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">거실</span></div>
+<div style="position: absolute; left: 750.8px; top: 465.0px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">욕실</span></div>
+</div>
+<div style="position: absolute; left: 20px; top: 860px; display: flex; flex-wrap: wrap; gap: 24px; font-size: 20px; color: #3B4358"><span style="display: flex; align-items: center; gap: 6px"><span style="width: 18px; height: 6px; border-radius: 3px; background: #2340C8; opacity: .55"></span>출입구</span><span style="display: flex; align-items: center; gap: 6px"><span style="width: 18px; height: 10px; border-radius: 3px; background: #EEF0F5; border: 1px solid #CDD4E2"></span>복도</span><span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 50%; background: #2340C8"></span>스마트 장비</span></div>
+</sc-if>
+<sc-if value="{{v.f60}}" hint-placeholder-val="{{false}}">
+<div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none">
+<div style="position: absolute; left: 409.5px; top: 651.0px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">좌석 키오스크</span></div>
+<div style="position: absolute; left: 221.2px; top: 444.5px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">ESL · 좌석 전등</span></div>
+<div style="position: absolute; left: 489.5px; top: 651.0px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">주문 키오스크</span></div>
+<div style="position: absolute; left: 668.6px; top: 435.5px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">픽업대</span></div>
+</div>
+<div style="position: absolute; left: 20px; top: 860px; display: flex; flex-wrap: wrap; gap: 24px; font-size: 20px; color: #3B4358"><span style="display: flex; align-items: center; gap: 6px"><span style="width: 18px; height: 6px; border-radius: 3px; background: #2340C8; opacity: .55"></span>출입구</span><span style="display: flex; align-items: center; gap: 6px"><span style="width: 18px; height: 10px; border-radius: 3px; background: #EEF0F5; border: 1px solid #CDD4E2"></span>복도</span><span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 50%; background: #2340C8"></span>스마트 장비</span></div>
+</sc-if>
+<sc-if value="{{v.f50}}" hint-placeholder-val="{{false}}">
+<div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none">
+<div style="position: absolute; left: 342.4px; top: 650.0px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">안면인식 단말기</span></div>
+<div style="position: absolute; left: 542.4px; top: 650.0px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">안면인식 단말기</span></div>
+<div style="position: absolute; left: 611.5px; top: 651.0px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">발권 키오스크</span></div>
+<div style="position: absolute; left: 713.2px; top: 654.5px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">스피드게이트</span></div>
+<div style="position: absolute; left: 616.2px; top: 352.0px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">락카 · ESL</span></div>
+<div style="position: absolute; left: 754.0px; top: 357.5px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">DID 발권 현황</span></div>
+</div>
+<div style="position: absolute; left: 20px; top: 860px; display: flex; flex-wrap: wrap; gap: 24px; font-size: 20px; color: #3B4358"><span style="display: flex; align-items: center; gap: 6px"><span style="width: 18px; height: 6px; border-radius: 3px; background: #2340C8; opacity: .55"></span>출입구</span><span style="display: flex; align-items: center; gap: 6px"><span style="width: 18px; height: 10px; border-radius: 3px; background: #EEF0F5; border: 1px solid #CDD4E2"></span>복도</span><span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 50%; background: #2340C8"></span>스마트 장비</span></div>
+</sc-if>
+<sc-if value="{{v.f45}}" hint-placeholder-val="{{false}}">
+<div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none">
+<div style="position: absolute; left: 800.0px; top: 435.5px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">55인치 키오스크</span></div>
+<div style="position: absolute; left: 620.0px; top: 350.0px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">3번 타석 스크린</span></div>
+<div style="position: absolute; left: 654.2px; top: 610.0px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">오토 티업</span></div>
+</div>
+<div style="position: absolute; left: 20px; top: 860px; display: flex; flex-wrap: wrap; gap: 24px; font-size: 20px; color: #3B4358"><span style="display: flex; align-items: center; gap: 6px"><span style="width: 18px; height: 6px; border-radius: 3px; background: #2340C8; opacity: .55"></span>출입구</span><span style="display: flex; align-items: center; gap: 6px"><span style="width: 18px; height: 10px; border-radius: 3px; background: #EEF0F5; border: 1px solid #CDD4E2"></span>복도</span><span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 50%; background: #2340C8"></span>스마트 장비</span></div>
+</sc-if>
+<sc-if value="{{v.f1}}" hint-placeholder-val="{{false}}">
+<div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none">
+<div style="position: absolute; left: 412.0px; top: 357.5px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">재실 감지 센서</span></div>
+<div style="position: absolute; left: 605.2px; top: 532.5px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">놀이 공간</span></div>
+<div style="position: absolute; left: 184.7px; top: 633.5px; width: 0; height: 0"><span style="position: absolute; left: -8px; top: -8px; width: 16px; height: 16px; border-radius: 50%; background: #2340C8; box-shadow: 0 0 0 3px rgba(255,255,255,0.9)"></span><span style="position: absolute; left: 0; bottom: 10px; transform: translateX(-50%); white-space: nowrap; padding: 6px 12px; border-radius: 8px; background: #141A2E; color: #FFFFFF; font-size: 18px; font-weight: 700">보호자 벤치</span></div>
+</div>
+<div style="position: absolute; left: 20px; top: 860px; display: flex; flex-wrap: wrap; gap: 24px; font-size: 20px; color: #3B4358"><span style="display: flex; align-items: center; gap: 6px"><span style="width: 18px; height: 6px; border-radius: 3px; background: #2340C8; opacity: .55"></span>출입구</span><span style="display: flex; align-items: center; gap: 6px"><span style="width: 18px; height: 10px; border-radius: 3px; background: #EEF0F5; border: 1px solid #CDD4E2"></span>복도</span><span style="display: flex; align-items: center; gap: 6px"><span style="width: 10px; height: 10px; border-radius: 50%; background: #2340C8"></span>스마트 장비</span></div>
+</sc-if>
+</div>
+<p style="position: absolute; left: 40px; right: 40px; bottom: 20px; margin: 0; font-size: 12px; line-height: 1.5; color: #545D72">※ 실제 도면이 아닌 연출용 층 배치 시안입니다. 실제 시설 크기·배치·장비 위치는 설계에 따라 달라집니다.</p>
+</div>
+
+<aside aria-label="선택한 시설" style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 28px 32px; background: #FFFFFF; border-left: 1px solid #DCE1EC">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 13px; font-weight: 700; color: #2340C8">{{cur.floor}} · {{cur.tag}}</span>
+<h2 style="margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.02em">{{cur.name}}</h2>
+<p style="margin: 0; font-size: 16px; line-height: 1.6; color: #545D72">{{cur.desc}}</p>
+</div>
+<div style="position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 14px; background: #1B2240">
+<svg width="0" height="0" style="position: absolute" aria-hidden="true">
+<defs>
+<filter id="lk-f-drop" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#141A2E" flood-opacity=".3"></feDropShadow></filter>
+<radialGradient id="lk-g-ball" cx=".35" cy=".3" r=".7"><stop offset="0" stop-color="#FFFFFF"></stop><stop offset="1" stop-color="#C9CED8"></stop></radialGradient>
+<linearGradient id="lk-g-tee3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FF9A5C"></stop><stop offset="1" stop-color="#D2611E"></stop></linearGradient>
+</defs>
+</svg>
+<sc-if value="{{sc.gym1}}" hint-placeholder-val="{{true}}">
+<img src="images/gym1.jpg" alt="입주민이 피트니스센터 입구 벽의 안면인식 단말기를 바라보는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<circle cx="418" cy="72" r="16" fill="none" stroke="#4F8BFF" stroke-width="3" class="lk-ping"></circle><g><rect x="20" y="20" width="160" height="34" rx="17" fill="#2A3350" fill-opacity=".94"></rect><text x="100.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">안면 인식 중…</text></g><g class="lk-in" style="animation-delay: 1.8s"><rect x="20" y="20" width="220" height="34" rx="17" fill="#17804F" fill-opacity=".94"></rect><text x="130.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">인증 완료 · 출입문 열림</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.gym2}}" hint-placeholder-val="{{false}}">
+<img src="images/gym2.jpg" alt="입주민이 열리는 유리 자동문을 지나 피트니스센터로 들어가는 뒷모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<g class="lk-in" style="animation-delay: 0.4s"><rect x="20" y="20" width="220" height="34" rx="17" fill="#17804F" fill-opacity=".94"></rect><text x="130.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">인증 완료 · 출입문 열림</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.gym3}}" hint-placeholder-val="{{false}}">
+<img src="images/gym3.jpg" alt="입주민이 창가 러닝머신에서 달리는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<g class="lk-in" style="animation-delay: 0.5s"><rect x="20" y="20" width="250" height="34" rx="17" fill="#2340C8" fill-opacity=".94"></rect><text x="145.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">운동 중 · 이용 기록 자동 저장</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.gx1}}" hint-placeholder-val="{{false}}">
+<img src="images/gx1.jpg" alt="운동복과 레깅스 차림의 입주민이 GX룸 유리 입구 옆 기둥의 안면인식 단말기를 바라보는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<circle cx="465" cy="73" r="12" fill="none" stroke="#4F8BFF" stroke-width="3" class="lk-ping"></circle><g><rect x="20" y="20" width="160" height="34" rx="17" fill="#2A3350" fill-opacity=".94"></rect><text x="100.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">안면 인식 중…</text></g><g class="lk-in" style="animation-delay: 1.8s"><rect x="20" y="20" width="220" height="34" rx="17" fill="#17804F" fill-opacity=".94"></rect><text x="130.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">인증 완료 · GX룸 입장</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.gx2}}" hint-placeholder-val="{{false}}">
+<img src="images/gx2.jpg" alt="입주민이 조명이 켜진 GX룸에 들어서는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<rect width="640" height="360" fill="#070B1A" class="lk-dark" style="animation-delay: 1.0s"></rect><g class="lk-in" style="animation-delay: 1.3s"><rect x="20" y="20" width="260" height="34" rx="17" fill="#17804F" fill-opacity=".94"></rect><text x="150.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">예약 시간에 맞춰 조명 자동 ON</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.gx3}}" hint-placeholder-val="{{false}}">
+<img src="images/gx3.jpg" alt="GX룸에서 입주민과 강사가 요가 매트 위에서 함께 옆구리 스트레칭을 하는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<g class="lk-in" style="animation-delay: 0.4s"><rect x="20" y="20" width="180" height="34" rx="17" fill="#2340C8" fill-opacity=".94"></rect><text x="110.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">스트레칭 진행 중</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.golf1}}" hint-placeholder-val="{{false}}">
+<img src="images/golf1.jpg" alt="입주민이 실내골프장 입구 벽 매립형 키오스크 화면을 누르는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<circle cx="273" cy="121" r="12" fill="none" stroke="#FFFFFF" stroke-width="3" class="lk-ping"></circle><g class="lk-in" style="animation-delay: 1.2s"><g filter="url(#lk-f-drop)"><rect x="440" y="250" width="180" height="82" rx="12" fill="#FFFFFF" fill-opacity=".97"></rect></g><circle cx="462" cy="278" r="10" fill="#17804F"></circle><path d="M457 278 l3.5 3.5 l6.5 -7" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path><text x="480" y="276" font-size="10" font-weight="400" fill="#545D72">키오스크 화면</text><text x="480" y="293" font-size="13" font-weight="700" fill="#141A2E">타석 예약 완료</text><text x="456" y="318" font-size="10" font-weight="400" fill="#545D72">예약한 타석을 이용할 수 있어요.</text></g><g class="lk-in" style="animation-delay: 0.3s"><rect x="20" y="20" width="230" height="34" rx="17" fill="#2340C8" fill-opacity=".94"></rect><text x="135.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">키오스크를 통한 입장</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.golf2}}" hint-placeholder-val="{{false}}">
+<img src="images/golf2.jpg" alt="입주민이 55인치 매립형 키오스크에서 타석을 예약하는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<circle cx="273" cy="121" r="12" fill="none" stroke="#FFFFFF" stroke-width="3" class="lk-ping"></circle><g class="lk-in" style="animation-delay: 1.6s"><g filter="url(#lk-f-drop)"><rect x="20" y="276" width="230" height="56" rx="14" fill="#17804F"></rect></g><text x="135" y="311" text-anchor="middle" font-size="17" font-weight="700" fill="#FFFFFF">3번 타석 예약 완료</text></g><g class="lk-in" style="animation-delay: 0.3s"><rect x="20" y="20" width="140" height="34" rx="17" fill="#2340C8" fill-opacity=".94"></rect><text x="90.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">타석 예약</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.golf3}}" hint-placeholder-val="{{false}}">
+<img src="images/golf3.jpg" alt="스크린과 조명이 켜진 3번 타석 매트 위에 티와 공이 올라와 있는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<rect width="640" height="360" fill="#070B1A" class="lk-dark" style="animation-delay: 0.5s"></rect><rect x="220" y="65" width="272" height="156" fill="#05070D" class="lk-dark" style="animation-delay: 1.2s"></rect><g class="lk-in" style="animation-delay: 1.2s"><g filter="url(#lk-f-drop)"><rect x="456" y="150" width="164" height="150" rx="12" fill="#FFFFFF" fill-opacity=".97"></rect></g><text x="472" y="174" font-size="10" font-weight="700" fill="#545D72">타석 제어 연동</text><text x="472" y="194" font-size="14" font-weight="700" fill="#141A2E">오토 티업</text><rect x="472" y="252" width="132" height="36" rx="6" fill="#2E8A4C"></rect>
+<ellipse cx="538" cy="270" rx="18" ry="5" fill="#0F3019"></ellipse>
+<defs><clipPath id="lk-c-bigtee"><rect x="456" y="150" width="164" height="120"></rect></clipPath></defs>
+<g clip-path="url(#lk-c-bigtee)"><g class="lk-teeup2" style="animation-delay: 1.8s">
+<rect x="532" y="236" width="12" height="36" rx="3" fill="url(#lk-g-tee3)"></rect>
+<ellipse cx="538" cy="236" rx="12" ry="4" fill="#FF9A5C"></ellipse>
+<circle cx="538" cy="219" r="17" fill="url(#lk-g-ball)"></circle>
+<circle cx="533" cy="214" r="1.6" fill="#B9BFCC"></circle><circle cx="543" cy="218" r="1.6" fill="#B9BFCC"></circle><circle cx="536" cy="225" r="1.6" fill="#B9BFCC"></circle>
+</g></g></g><g class="lk-in" style="animation-delay: 0.6s"><g filter="url(#lk-f-drop)"><rect x="20" y="222" width="186" height="112" rx="12" fill="#FFFFFF" fill-opacity=".97"></rect></g><text x="34" y="238" font-size="10" font-weight="700" fill="#545D72">3번 타석 제어 연동</text><g class="lk-in" style="animation-delay: 0.8s"><circle cx="38" cy="248" r="5" fill="#22C27A"></circle><text x="50" y="252" font-size="12" font-weight="700" fill="#141A2E">타석 조명 ON</text></g><g class="lk-in" style="animation-delay: 1.3s"><circle cx="38" cy="270" r="5" fill="#22C27A"></circle><text x="50" y="274" font-size="12" font-weight="700" fill="#141A2E">스크린 ON</text></g><g class="lk-in" style="animation-delay: 1.9s"><circle cx="38" cy="292" r="5" fill="#22C27A"></circle><text x="50" y="296" font-size="12" font-weight="700" fill="#141A2E">오토 티업</text></g><g class="lk-in" style="animation-delay: 2.5s"><circle cx="38" cy="314" r="5" fill="#22C27A"></circle><text x="50" y="318" font-size="12" font-weight="700" fill="#141A2E">냉난방기 ON</text></g></g><g class="lk-in" style="animation-delay: 2.8s"><rect x="20" y="20" width="190" height="34" rx="17" fill="#17804F" fill-opacity=".94"></rect><text x="115.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">3번 타석 준비 완료</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.cafe1}}" hint-placeholder-val="{{false}}">
+<img src="images/cafe1.jpg" alt="입주민이 카페 라운지 벽 매립형 키오스크에서 커피를 고르는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<circle cx="382" cy="119" r="12" fill="none" stroke="#FFFFFF" stroke-width="3" class="lk-ping"></circle><g class="lk-in" style="animation-delay: 1.2s"><g filter="url(#lk-f-drop)"><rect x="468" y="232" width="156" height="84" rx="12" fill="#FFFFFF" fill-opacity=".97"></rect></g><circle cx="488" cy="258" r="10" fill="#17804F"></circle><path d="M483 258 l3.5 3.5 l6.5 -7" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path><text x="504" y="254" font-size="10" font-weight="400" fill="#545D72">키오스크 주문</text><text x="504" y="272" font-size="13" font-weight="700" fill="#141A2E">카페라떼 주문 접수</text><text x="482" y="300" font-size="10" font-weight="400" fill="#545D72">준비되면 앱으로 알려드려요</text></g><g class="lk-in" style="animation-delay: 0.3s"><rect x="20" y="20" width="200" height="34" rx="17" fill="#2340C8" fill-opacity=".94"></rect><text x="120.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">키오스크로 커피 주문</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.cafe2}}" hint-placeholder-val="{{false}}">
+<img src="images/cafe2.jpg" alt="입주민이 카페 라운지 테이블에서 휴대폰 알림을 보며 미소 짓는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<g class="lk-in" style="animation-delay: 0.6s; width: 251px; height: 147px"><g filter="url(#lk-f-drop)"><rect x="420" y="20" width="200" height="96" rx="12" fill="#FFFFFF" fill-opacity=".97"></rect></g><rect x="434" y="34" width="16" height="16" rx="4" fill="#2340C8"></rect><text x="456" y="47" font-size="10" font-weight="700" fill="#141A2E">링스온 카페 라운지</text><text x="434" y="74" font-size="13" font-weight="700" fill="#141A2E">주문하신 카페라떼가</text><text x="434" y="92" font-size="13" font-weight="700" fill="#141A2E">준비되었어요!</text><text x="434" y="108" font-size="10" font-weight="400" fill="#545D72">픽업대에서 받아 가세요</text></g><circle cx="370" cy="175" r="14" fill="none" stroke="#7FB0FF" stroke-width="3" class="lk-ping"></circle><g class="lk-in" style="animation-delay: 0.3s"><rect x="20" y="20" width="150" height="34" rx="17" fill="#2340C8" fill-opacity=".94"></rect><text x="95.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">앱 알림 도착</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.cafe3}}" hint-placeholder-val="{{false}}">
+<img src="images/cafe3.jpg" alt="바리스타가 입주민에게 테이크아웃 커피를 건네는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<g class="lk-in" style="animation-delay: 0.4s"><rect x="20" y="20" width="220" height="34" rx="17" fill="#2340C8" fill-opacity=".94"></rect><text x="130.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">바리스타에게 커피 픽업</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.sauna1}}" hint-placeholder-val="{{false}}">
+<img src="images/sauna1.jpg" alt="사우나 출입구 앞 스피드게이트 3대와 벽면의 발권 현황 DID" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<circle cx="276" cy="113" r="14" fill="none" stroke="#22C27A" stroke-width="3" class="lk-ping"></circle><g class="lk-in" style="animation-delay: 0.4s"><rect x="20" y="20" width="190" height="34" rx="17" fill="#17804F" fill-opacity=".94"></rect><text x="115.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">스피드게이트 통과</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.sauna2}}" hint-placeholder-val="{{false}}">
+<img src="images/sauna2.jpg" alt="사우나 입장 키오스크 화면에 57번 락카가 배정된 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<circle cx="320" cy="300" r="18" fill="none" stroke="#FFFFFF" stroke-width="3" class="lk-ping"></circle><g class="lk-in" style="animation-delay: 0.3s"><rect x="20" y="20" width="180" height="34" rx="17" fill="#2340C8" fill-opacity=".94"></rect><text x="110.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">키오스크 입장 발권</text></g><g class="lk-in" style="animation-delay: 1.4s"><g filter="url(#lk-f-drop)"><rect x="440" y="276" width="180" height="56" rx="14" fill="#17804F"></rect></g><text x="530" y="311" text-anchor="middle" font-size="17" font-weight="700" fill="#FFFFFF">57번 락카 배정</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.sauna3}}" hint-placeholder-val="{{false}}">
+<img src="images/sauna3.jpg" alt="사우나 발권 현황 DID 화면" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<rect x="235" y="171" width="170" height="14" rx="4" fill="none" stroke="#4F8BFF" stroke-width="3" class="lk-in" style="animation-delay: .8s"></rect><g class="lk-in" style="animation-delay: 0.3s"><rect x="20" y="20" width="160" height="34" rx="17" fill="#2340C8" fill-opacity=".94"></rect><text x="100.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">DID 발권 현황</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.sauna4}}" hint-placeholder-val="{{false}}">
+<img src="images/sauna4.jpg" alt="나무 락카 문 상단 ESL 중 한 칸에 김*리가 표시된 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<circle cx="320" cy="90" r="22" fill="none" stroke="#4F8BFF" stroke-width="3" class="lk-ping"></circle><g class="lk-in" style="animation-delay: 0.6s"><rect x="20" y="20" width="280" height="34" rx="17" fill="#17804F" fill-opacity=".94"></rect><text x="160.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">락카 ESL · 57번 김*리 표시</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.study1}}" hint-placeholder-val="{{false}}">
+<img src="images/study1.jpg" alt="입주민이 스터디카페 입구 벽 매립형 키오스크에서 좌석을 고르는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<circle cx="263" cy="110" r="10" fill="none" stroke="#2340C8" stroke-width="3" class="lk-ping"></circle><g class="lk-in" style="animation-delay: 1.2s"><g filter="url(#lk-f-drop)"><rect x="350" y="250" width="270" height="82" rx="12" fill="#FFFFFF" fill-opacity=".97"></rect></g><circle cx="372" cy="278" r="10" fill="#17804F"></circle><path d="M367 278 l3.5 3.5 l6.5 -7" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path><text x="390" y="276" font-size="10" font-weight="400" fill="#545D72">좌석 지정</text><text x="390" y="293" font-size="13" font-weight="700" fill="#141A2E">12번 좌석 예약 완료</text><text x="366" y="318" font-size="10" font-weight="400" fill="#545D72">스터디카페 입장 시 좌석의 전등이 활성화됩니다.</text></g><g class="lk-in" style="animation-delay: 0.3s"><rect x="20" y="20" width="210" height="34" rx="17" fill="#2340C8" fill-opacity=".94"></rect><text x="125.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">키오스크에서 좌석 지정</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.study3}}" hint-placeholder-val="{{false}}">
+<img src="images/study3.jpg" alt="스탠드 조명과 콘센트 전원이 켜진 좌석에서 노트북으로 공부하는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<rect width="640" height="360" fill="#070B1A" class="lk-dark" style="animation-delay: 0.3s"></rect><g filter="url(#lk-f-drop)"><rect x="506" y="52" width="70" height="46" rx="3.5" fill="#F7F7F5" stroke="#C9CCD3" stroke-width=".8"></rect></g><rect x="509" y="55" width="64" height="40" rx="1.5" fill="#E7E7E0"></rect><text x="541.0" y="64.42" text-anchor="middle" font-size="5.98" font-weight="500" fill="#3A3F4A">스터디카페 · 12번</text><text x="541.0" y="83.28" text-anchor="middle" font-size="9.200000000000001" font-weight="400" fill="#7A808C" class="lk-out" style="animation-delay: 0.8999999999999999s">빈 좌석</text><text x="541.0" y="85.12" text-anchor="middle" font-size="14.72" font-weight="800" fill="#1A1A1A" class="lk-in" style="animation-delay: 1.2s">김*리</text><circle cx="541" cy="75" r="26" fill="none" stroke="#4F8BFF" stroke-width="3" class="lk-ping"></circle><g class="lk-in" style="animation-delay: 1.0s"><g filter="url(#lk-f-drop)"><rect x="478" y="238" width="150" height="100" rx="12" fill="#FFFFFF" fill-opacity=".97"></rect></g><text x="494" y="260" font-size="10" font-weight="700" fill="#545D72">12번 좌석 · 예약 연동</text><circle cx="500" cy="282" r="5" fill="#22C27A"></circle><text x="512" y="286" font-size="12" font-weight="700" fill="#141A2E">ESL에 이름 표시</text><circle cx="500" cy="308" r="5" fill="#22C27A"></circle><text x="512" y="312" font-size="12" font-weight="700" fill="#141A2E">좌석 전등 ON</text><text x="494" y="330" font-size="9" font-weight="400" fill="#545D72">앱·키오스크로 전등 제어 가능</text></g><g class="lk-in" style="animation-delay: 1.4s"><rect x="20" y="20" width="300" height="34" rx="17" fill="#17804F" fill-opacity=".94"></rect><text x="170.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">좌석 예약 → ESL 이름 표시 · 전등 ON</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.kids1}}" hint-placeholder-val="{{false}}">
+<img src="images/kids1.jpg" alt="아무도 없는 키즈카페 놀이 공간과 흔들목마" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<rect width="640" height="360" fill="#070B1A" opacity="0.86"></rect><circle cx="610" cy="30" r="6" fill="#E5484D"></circle><g><rect x="20" y="20" width="200" height="34" rx="17" fill="#2A3350" fill-opacity=".94"></rect><text x="120.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">재실 없음 · 조명 OFF</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.kids2}}" hint-placeholder-val="{{false}}">
+<img src="images/kids2.jpg" alt="엄마가 딸의 손을 잡고 키즈카페에 들어오는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<rect width="640" height="360" fill="#070B1A" class="lk-dark" style="animation-delay: 1.2s; animation-duration: .25s"></rect><circle cx="610" cy="30" r="6" fill="#E5484D"></circle><circle cx="610" cy="30" r="6" fill="#22C27A" class="lk-in" style="animation-delay: 1.2s; animation-duration: .2s"></circle><g class="lk-in" style="animation-delay: 1.3s"><rect x="20" y="20" width="200" height="34" rx="17" fill="#17804F" fill-opacity=".94"></rect><text x="120.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">재실 감지 → 조명 ON</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.kids3}}" hint-placeholder-val="{{false}}">
+<img src="images/kids3.jpg" alt="딸이 흔들목마를 타고 엄마가 옆에서 웃으며 지켜보는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<circle cx="610" cy="30" r="6" fill="#22C27A"></circle><g class="lk-in" style="animation-delay: 0.4s"><rect x="20" y="20" width="250" height="34" rx="17" fill="#2340C8" fill-opacity=".94"></rect><text x="145.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">시설 이용 중 · 재실 조명 유지</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.guest1}}" hint-placeholder-val="{{false}}">
+<img src="images/guest1.jpg" alt="입주민이 소파에서 휴대폰으로 게스트하우스 날짜를 예약하는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<circle cx="410" cy="231" r="12" fill="none" stroke="#FFFFFF" stroke-width="3" class="lk-ping"></circle><g class="lk-in" style="animation-delay: 1.3s"><g filter="url(#lk-f-drop)"><rect x="420" y="20" width="200" height="76" rx="12" fill="#FFFFFF" fill-opacity=".97"></rect></g><circle cx="442" cy="48" r="10" fill="#17804F"></circle><path d="M437 48 l3.5 3.5 l6.5 -7" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path><text x="460" y="44" font-size="10" font-weight="400" fill="#545D72">게스트하우스</text><text x="460" y="62" font-size="13" font-weight="700" fill="#141A2E">예약이 확정되었어요</text><text x="436" y="84" font-size="10" font-weight="400" fill="#545D72">[체크인 날짜] ~ [체크아웃 날짜]</text></g><g class="lk-in" style="animation-delay: 0.3s"><rect x="20" y="20" width="180" height="34" rx="17" fill="#2340C8" fill-opacity=".94"></rect><text x="110.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">모바일로 숙박 예약</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.guest2}}" hint-placeholder-val="{{false}}">
+<img src="images/guest2.jpg" alt="손에 든 휴대폰에 메시지가 도착한 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<g class="lk-in" style="animation-delay: 0.5s"><g filter="url(#lk-f-drop)"><rect x="20" y="70" width="224" height="170" rx="12" fill="#FFFFFF" fill-opacity=".97"></rect></g><text x="36" y="96" font-size="11" font-weight="700" fill="#2340C8">[링스온 게스트하우스]</text><text x="36" y="122" font-size="12" font-weight="400" fill="#141A2E">임시 비밀번호가 발급되었어요</text><text x="132" y="166" text-anchor="middle" font-size="30" font-weight="800" fill="#2340C8" letter-spacing="3">482917</text><text x="36" y="202" font-size="10" font-weight="400" fill="#545D72">이용 기간에만 사용할 수 있어요.</text><text x="36" y="220" font-size="10" font-weight="400" fill="#545D72">타인에게 공유하지 마세요.</text></g><circle cx="331" cy="118" r="14" fill="none" stroke="#F4B942" stroke-width="3" class="lk-ping"></circle><g class="lk-in" style="animation-delay: 0.3s"><rect x="20" y="20" width="190" height="34" rx="17" fill="#2340C8" fill-opacity=".94"></rect><text x="115.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">임시 비밀번호 수신</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.guest3}}" hint-placeholder-val="{{false}}">
+<img src="images/guest3.jpg" alt="입주민이 캐리어를 끌고 게스트하우스 도어락 번호를 누르는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<circle cx="447" cy="190" r="10" fill="none" stroke="#7FB0FF" stroke-width="3" class="lk-ping"></circle><g class="lk-in" style="animation-delay: 0.2s"><g filter="url(#lk-f-drop)"><rect x="20" y="196" width="164" height="130" rx="12" fill="#FFFFFF" fill-opacity=".97"></rect></g><text x="36" y="220" font-size="10" font-weight="700" fill="#545D72">도어락</text><rect x="32" y="228" width="140" height="32" rx="6" fill="#0E1320"></rect><circle cx="42" cy="244" r="5" fill="#7FB0FF" class="lk-in" style="animation-delay: 0.3s"></circle><circle cx="66" cy="244" r="5" fill="#7FB0FF" class="lk-in" style="animation-delay: 0.6s"></circle><circle cx="90" cy="244" r="5" fill="#7FB0FF" class="lk-in" style="animation-delay: 0.9s"></circle><circle cx="114" cy="244" r="5" fill="#7FB0FF" class="lk-in" style="animation-delay: 1.2s"></circle><circle cx="138" cy="244" r="5" fill="#7FB0FF" class="lk-in" style="animation-delay: 1.5s"></circle><circle cx="162" cy="244" r="5" fill="#7FB0FF" class="lk-in" style="animation-delay: 1.8s"></circle><g class="lk-in" style="animation-delay: 2.1s"><rect x="32" y="274" width="140" height="36" rx="6" fill="#17804F"></rect><text x="102" y="297" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">문이 열렸어요</text></g></g><g class="lk-in" style="animation-delay: 0.1s"><rect x="20" y="20" width="190" height="34" rx="17" fill="#2340C8" fill-opacity=".94"></rect><text x="115.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">임시 비밀번호 입력</text></g>
+</svg>
+</sc-if>
+
+<sc-if value="{{sc.guest4}}" hint-placeholder-val="{{false}}">
+<img src="images/guest4.jpg" alt="입주민이 조명과 에어컨이 켜진 게스트하우스 객실에 들어서는 모습" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover">
+<svg viewBox="0 0 640 360" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; font-family: 'Noto Sans KR', sans-serif">
+<rect width="640" height="360" fill="#070B1A" class="lk-dark" style="animation-delay: 0.6s"></rect><g class="lk-in" style="animation-delay: 1.8s"><g class="lk-air"><path d="M390 88 q8 7 0 14 q-8 7 0 14" fill="none" stroke="#7FB0FF" stroke-width="3" stroke-linecap="round"></path><path d="M402 88 q8 7 0 14 q-8 7 0 14" fill="none" stroke="#7FB0FF" stroke-width="3" stroke-linecap="round"></path><path d="M414 88 q8 7 0 14 q-8 7 0 14" fill="none" stroke="#7FB0FF" stroke-width="3" stroke-linecap="round"></path></g></g><g class="lk-in" style="animation-delay: 1.2s"><rect x="20" y="20" width="120" height="34" rx="17" fill="#17804F" fill-opacity=".94"></rect><text x="80.0" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">조명 ON</text></g><g class="lk-in" style="animation-delay: 2s"><rect x="20" y="62" width="190" height="34" rx="17" fill="#2340C8" fill-opacity=".94"></rect><text x="115.0" y="84" text-anchor="middle" font-size="14" font-weight="700" fill="#FFFFFF">에어컨 가동 · 24℃</text></g>
+</svg>
+</sc-if>
+
+<div style="position: absolute; left: 16px; bottom: 16px; padding: 8px 16px; border-radius: 999px; background: rgba(20,26,46,0.82); color: #FFFFFF; font-size: 16px; font-weight: 700">STEP {{stepNum}} / {{stepTotal}} · {{now.label}}</div>
+</div>
+<ol aria-label="진행 단계" style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px">
+<sc-for list="{{steps}}" as="s" hint-placeholder-count="3">
+<li style="display: flex">
+<button type="button" onClick="{{s.pick}}" aria-current="{{s.current}}" style="{{s.style}}">
+<span style="font-size: 11px; font-weight: 700">STEP {{s.num}}</span>
+<span style="font-size: 15px; font-weight: 700">{{s.label}}</span>
+</button>
+</li>
+</sc-for>
+</ol>
+<div style="display: flex; gap: 16px; align-items: stretch; width: 100%">
+<div style="flex: 3 1 0; min-width: 0; padding: 18px 20px; border-radius: 12px; background: #F4F6FB; display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 20px; font-weight: 700">{{now.title}}</span>
+<p style="margin: 0; font-size: 16px; line-height: 1.7; color: #3B4358; white-space: pre-line">{{now.body}}</p>
+</div>
+<sc-if value="{{hasPush}}" hint-placeholder-val="{{false}}">
+<div style="flex: 2 1 0; min-width: 0; display: flex; align-items: flex-start; gap: 10px; padding: 16px; border-radius: 12px; border: 1px solid #DCE1EC">
+<div style="width: 28px; height: 28px; flex: none; border-radius: 8px; background: #2340C8; display: flex; align-items: center; justify-content: center">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 700; color: #545D72">입주민 앱 알림</span>
+<span style="font-size: 16px; font-weight: 800; color: #2340C8">{{now.pushTitle}}</span>
+<span style="font-size: 13px; line-height: 1.6; color: #545D72; white-space: pre-line">{{now.pushBody}}</span>
+</div>
+</div>
+</sc-if>
+
+</div>
+<div style="margin-top: auto; display: flex; justify-content: space-between; gap: 12px">
+<button type="button" onClick="{{prev}}" disabled="{{isFirst}}" style="{{prevStyle}}">이전 단계</button>
+<button type="button" onClick="{{next}}" style="padding: 12px 24px; min-height: 48px; border-radius: 10px; border: none; background: #2340C8; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">{{nextLabel}}</button>
+</div>
+</aside>
+</div>
+</div>
+</template>
+<script>
+(function(){
+function get(scope, path){ path = path.trim();
+  if (path === 'true') return true; if (path === 'false') return false;
+  if (/^-?\d+(\.\d+)?$/.test(path)) return parseFloat(path);
+  var parts = path.split('.'), v = scope;
+  for (var i = 0; i < parts.length; i++){ if (v == null) return undefined; v = v[parts[i]]; }
+  return v; }
+var WHOLE = /^\s*\{\{([^}]+)\}\}\s*$/, ANY = /\{\{([^}]+)\}\}/g;
+function interp(s, scope){ return s.replace(ANY, function(_, p){ var v = get(scope, p); return v == null ? '' : String(v); }); }
+function build(src, scope, out){
+  for (var n = src.firstChild; n; n = n.nextSibling){
+    if (n.nodeType === 3){ out.appendChild(document.createTextNode(interp(n.nodeValue, scope))); continue; }
+    if (n.nodeType !== 1) continue;
+    var tag = n.localName;
+    if (tag === 'sc-if'){ var m = n.getAttribute('value').match(WHOLE); if (m && get(scope, m[1])) build(n, scope, out); continue; }
+    if (tag === 'sc-for'){ var lm = n.getAttribute('list').match(WHOLE); var list = lm ? get(scope, lm[1]) : null; var as = n.getAttribute('as') || 'item';
+      if (list) for (var i = 0; i < list.length; i++){ var s2 = Object.create(scope); s2[as] = list[i]; s2.$index = i; build(n, s2, out); } continue; }
+    var el = n.namespaceURI === 'http://www.w3.org/2000/svg' ? document.createElementNS(n.namespaceURI, tag) : document.createElement(tag);
+    for (var a = 0; a < n.attributes.length; a++){
+      var at = n.attributes[a], name = at.name, val = at.value;
+      if (name.indexOf('hint-') === 0) continue;
+      var wm = val.match(WHOLE);
+      if (/^on[a-z]+$/i.test(name)){ if (wm){ var fn = get(scope, wm[1]); if (typeof fn === 'function') el.addEventListener(name.slice(2).toLowerCase(), fn); } continue; }
+      if (wm){ var v = get(scope, wm[1]);
+        if (name === 'disabled'){ if (v) el.setAttribute('disabled', ''); continue; }
+        if (v === false || v == null) continue;
+        el.setAttribute(name, String(v)); continue; }
+      el.setAttribute(name, val.indexOf('{{') >= 0 ? interp(val, scope) : val);
+    }
+    build(n, scope, el);
+    out.appendChild(el);
+  }
+}
+function DCLogic(props){ this.props = props || {}; this.state = {}; }
+DCLogic.prototype.setState = function(p){ var s = {}; for (var k in this.state) s[k] = this.state[k]; for (var k2 in p) s[k2] = p[k2]; this.state = s; this.__render(); };
+DCLogic.prototype.forceUpdate = function(){ this.__render(); };
+window.DCLogic = DCLogic;
+window.__mountDC = function(root, tplEl, Component){
+  var inst = new Component({});
+  inst.__render = function(){ var frag = document.createDocumentFragment(); build(tplEl.content, inst.renderVals(), frag); root.replaceChildren(frag); };
+  inst.__render();
+};
+})();
+</script>
+<script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sel: 'golf', step: 0, mode: 'all' };
+  }
+  /* ✏️ [B] 시설 데이터 ─ 오른쪽 패널 글자는 여기서 바꿉니다
+     name=시설 이름, floor=층, tag=파란 작은 글씨, desc=시설 설명
+     steps 안: label=STEP 버튼, title=설명 제목, body=설명 본문(\n = 줄바꿈)
+     pushTitle/pushBody 가 있는 단계만 오른쪽 '입주민 앱 알림' 칸이 나옵니다
+     scene=사진 연결 이름 ─ 바꾸지 마세요. 작은따옴표 ' ' 안의 글자만 고치세요. */
+  facilities() {
+    return [
+      { id: 'fitness', name: '피트니스센터', floor: '50F', tag: '안면인식 출입',
+        desc: '안면인식으로 카드 없이 출입하는 운동 공간입니다.',
+        steps: [
+          { label: '안면인식', scene: 'gym1', title: '안면 단말기에 얼굴 인식', body: '피트니스센터 입구의 안면인식 단말기 앞에 서면 등록된 입주민 얼굴을 확인합니다.\n출입카드를 꺼낼 필요가 없어요.', push: '피트니스센터 출입 인증을 진행하고 있어요.' },
+          { label: '입장', scene: 'gym2', title: '인증 완료 · 출입문 열림', body: '인증이 끝나면 출입문이 자동으로 열리고 입장 기록이 남습니다.', push: '김*리님, 피트니스센터에 입장했어요.' },
+          { label: '운동', scene: 'gym3', title: '운동 시작', body: '유산소·근력 기구를 자유롭게 이용합니다. 이용 기록은 앱에서 확인할 수 있어요.', push: '오늘의 운동 기록이 저장되고 있어요.' }
+        ] },
+      { id: 'gx', name: 'GX룸', floor: '50F', tag: '안면인식 · 자동 조명',
+        desc: '예약 시간에 맞춰 조명이 자동으로 켜지고 이용할 수 있는 공간입니다.',
+        steps: [
+          { label: '안면인식', scene: 'gx1', title: 'GX룸 안면 단말기 인증', body: 'GX룸 입구 단말기에 얼굴을 비추면 입장이 확인됩니다.', push: 'GX룸 출입 인증이 완료되었어요.' },
+          { label: '조명 ON', scene: 'gx2', title: '예약 시간에 맞춰 조명 자동 ON', body: '예약 시간에 맞춰 조명이 자동으로 켜집니다.', push: '예약 시간에 맞춰 GX룸 조명이 켜졌어요.' },
+          { label: 'GX 수업', scene: 'gx3', title: 'GX 수업 시작', body: '수강 중인 GX 수업에 자유롭게 참여할 수 있어요.', push: 'GX 수업에 참여했어요. 무리하지 마세요!' }
+        ] },
+      { id: 'golf', name: '실내 골프연습장', floor: '45F', tag: '키오스크 입장 · 타석 예약',
+        desc: 'IoT 제어를 통해 조명, 오토 티업기, 냉난방기 등이 자동 제어됩니다.',
+        steps: [
+          { label: '입장', scene: 'golf1', title: '키오스크 입장 인증', body: '키오스크를 통해 입주민 인증 후 타석을 예약할 수 있습니다.', push: '실내 골프연습장 입장이 확인되었어요.' },
+          { label: '타석 예약', scene: 'golf2', title: '타석 예약', body: '원하는 타석을 예약합니다.', push: '3번 타석 예약이 완료되었어요.', pushTitle: '타석 예약 완료', pushBody: '3번 타석이 예약되었습니다.\n2026. 11. 18. 11:00 ~ 12:00' },
+          { label: '타석 준비', scene: 'golf3', title: '스크린 · 오토 티업 · 냉난방 · 조명 ON', body: '예약 시간이 되면 타석 제어가 연동되어 스크린이 켜집니다.\n오토 티업이 작동하고, 냉난방기와 타석 조명이 켜집니다.', push: '3번 타석이 준비되었어요.' }
+        ] },
+      { id: 'lounge', name: '카페 라운지', floor: '60F', tag: '키오스크 · 메뉴 주문',
+        desc: '키오스크로 주문하고 앱 알림을 받아 픽업하는 카페입니다.',
+        steps: [
+          { label: '주문', scene: 'cafe1', title: '키오스크 카페 메뉴 주문', body: '카페 라운지 키오스크에서 주문합니다.', push: '카페라떼 주문이 접수되었어요.', pushTitle: '주문 접수', pushBody: '카페라떼 주문이 접수되었어요.' },
+          { label: '앱 알림', scene: 'cafe2', title: '음료 준비 완료 알림', body: '음료가 준비되면 입주민 앱으로 픽업 알림이 옵니다.', push: '주문하신 카페라떼가 준비되었어요!', pushTitle: '음료 준비 완료', pushBody: '주문하신 카페라떼가 준비되었어요!' },
+          { label: '픽업', scene: 'cafe3', title: '바리스타에게 커피 받기', body: '픽업대에서 바리스타가 준비한 커피를 건네받습니다.', push: '맛있게 드세요. 좋은 하루 보내세요!', pushTitle: '픽업 완료', pushBody: '맛있게 드세요. 좋은 하루 보내세요!' }
+        ] },
+      { id: 'sauna', name: '사우나', floor: '50F', tag: '키오스크 · 락카 발권',
+        desc: '키오스크를 통해 락카가 자동 발권되고, DID와 락카에 이용자 이름이 표기됩니다.',
+        steps: [
+          { label: '키오스크 입장', scene: 'sauna2', title: '키오스크 락카 발권', body: '키오스크에서 사우나 선택 시 락카 번호가 자동으로 배정됩니다.', push: '57번 락카가 배정되었어요.' },
+          { label: '스피드게이트', scene: 'sauna1', title: '스피드게이트 통과', body: '락카 발권 시 스피드게이트 통과가 가능합니다.\n입구 DID를 통해 락카 번호를 재확인할 수 있습니다.', push: '사우나 출입이 확인되었어요.' },
+          { label: 'DID 발권 현황', scene: 'sauna3', title: 'DID 락카 발권 현황 표시', body: '입구 DID를 통해 락카 번호를 재확인할 수 있습니다.', push: '발권 현황에 등록되었어요.' },
+          { label: '락카 ESL', scene: 'sauna4', title: '락카(신발장·옷장)에 이용자 이름 표시', body: '배정된 락카(신발장·옷장)에 이용자 이름이 표시됩니다.', push: '57번 락카 ESL에 이름이 표시되었어요.' }
+        ] },
+      { id: 'study', name: '스터디카페', floor: '60F', tag: '키오스크 · 좌석 예약',
+        desc: '키오스크를 통해 좌석 선택 시 이용 좌석에 이용자 이름이 표기됩니다.',
+        steps: [
+          { label: '좌석 지정', scene: 'study1', title: '키오스크 이용 좌석 선택', body: '키오스크를 통해 이용 좌석을 선택합니다.', push: '12번 좌석이 지정되었어요.' },
+          { label: 'ESL · 전등', scene: 'study3', title: '좌석 이용자 이름 표기 및 전등 ON', body: '이용 좌석에 이용자 이름이 표기되고 좌석 전등이 켜집니다.', push: '12번 좌석 전등이 켜졌어요.' }
+        ] },
+      { id: 'kids', name: '키즈카페', floor: '1F', tag: '재실 감지 조명',
+        desc: '재실 여부에 따라 조명이 자동으로 켜지고 꺼지는 어린이 놀이 공간입니다.',
+        steps: [
+          { label: '대기', scene: 'kids1', title: '아무도 없을 땐 소등', body: '이용자가 없으면 조명이 꺼진 상태로 대기합니다.', push: '키즈카페는 지금 비어 있어요.' },
+          { label: '입장', scene: 'kids2', title: '엄마 손 잡고 입장 · 조명 ON', body: '보호자와 아이가 들어오면 재실 감지 센서가 인식해 조명이 켜집니다.', push: '키즈카페 입장이 확인되었어요.' },
+          { label: '키즈카페 이용', scene: 'kids3', title: '키즈카페 이용', body: '밝아진 놀이 공간에서 아이가 목마를 타며 놉니다. 재실 중에는 조명이 유지돼요.', push: '아이와 즐거운 시간 보내세요.' }
+        ] },
+      { id: 'guest', name: '게스트하우스', floor: '펜트하우스', tag: '모바일 키 · IoT 제어',
+        desc: '모바일 예약, 임시 비밀번호, IoT 제어로 운영되는 숙박 공간입니다.',
+        steps: [
+          { label: '예약', scene: 'guest1', title: '모바일로 숙박 예약', body: '입주민 앱에서 날짜를 골라 게스트하우스를 예약합니다.', push: '게스트하우스 예약이 확정되었어요.' },
+          { label: '비밀번호', scene: 'guest2', title: '임시 비밀번호 수신', body: '예약이 확정되면 이용 기간에만 쓸 수 있는 임시 비밀번호가 모바일로 전송됩니다.', push: '임시 비밀번호가 도착했어요. 이용 기간에만 사용할 수 있어요.' },
+          { label: '도어락', scene: 'guest3', title: '도어락 열기', body: '받은 임시 비밀번호를 도어락에 입력해 문을 엽니다.', push: '게스트하우스 도어락이 열렸어요.' },
+          { label: 'IoT 제어', scene: 'guest4', title: '조명 ON · 에어컨 가동', body: '문이 열리면 IoT 제어로 조명이 켜지고 에어컨이 가동됩니다.', push: '조명과 에어컨이 켜졌어요. 편안한 시간 보내세요.' }
+        ] }
+    ];
+  }
+  renderVals() {
+    const IMG = {"gym1": "images/gym1.jpg", "gym2": "images/gym2.jpg", "gym3": "images/gym3.jpg", "gx1": "images/gx1.jpg", "gx2": "images/gx2.jpg", "gx3": "images/gx3.jpg", "golf1": "images/golf1.jpg", "golf2": "images/golf2.jpg", "golf3": "images/golf3.jpg", "cafe1": "images/cafe1.jpg", "cafe2": "images/cafe2.jpg", "cafe3": "images/cafe3.jpg", "sauna1": "images/sauna1.jpg", "sauna2": "images/sauna2.jpg", "sauna3": "images/sauna3.jpg", "sauna4": "images/sauna4.jpg", "study1": "images/study1.jpg", "study3": "images/study3.jpg", "kids1": "images/kids1.jpg", "kids2": "images/kids2.jpg", "kids3": "images/kids3.jpg", "guest1": "images/guest1.jpg", "guest2": "images/guest2.jpg", "guest3": "images/guest3.jpg", "guest4": "images/guest4.jpg"};
+    const ALT = {"gym1": "입주민이 피트니스센터 입구 벽의 안면인식 단말기를 바라보는 모습", "gym2": "입주민이 열리는 유리 자동문을 지나 피트니스센터로 들어가는 뒷모습", "gym3": "입주민이 창가 러닝머신에서 달리는 모습", "gx1": "입주민이 GX룸 입구 벽의 안면인식 단말기를 바라보는 모습", "gx2": "입주민이 조명이 켜진 GX룸에 들어서는 모습", "gx3": "입주민이 GX룸 매트 위에서 두 팔을 올려 옆구리 스트레칭을 하는 모습", "golf1": "입주민이 실내골프장 입구 벽 매립형 키오스크 화면을 누르는 모습", "golf2": "입주민이 55인치 매립형 키오스크에서 타석을 예약하는 모습", "golf3": "스크린과 조명이 켜진 3번 타석 매트 위에 티와 공이 올라와 있는 모습", "cafe1": "입주민이 카페 라운지 벽 매립형 키오스크에서 커피를 고르는 모습", "cafe2": "입주민이 카페 라운지 테이블에서 휴대폰 알림을 보며 미소 짓는 모습", "cafe3": "바리스타가 입주민에게 테이크아웃 커피를 건네는 모습", "sauna1": "사우나 출입구 앞 스피드게이트 3대와 벽면의 발권 현황 DID", "sauna2": "사우나 입장 키오스크 화면에 57번 락카가 배정된 모습", "sauna3": "사우나 발권 현황 DID 화면", "sauna4": "나무 락카 문 상단 ESL 중 한 칸에 김*리가 표시된 모습", "study1": "입주민이 스터디카페 입구 벽 매립형 키오스크에서 좌석을 고르는 모습", "study3": "스탠드 조명과 콘센트 전원이 켜진 좌석에서 노트북으로 공부하는 모습", "kids1": "아무도 없는 키즈카페 놀이 공간과 흔들목마", "kids2": "엄마가 딸의 손을 잡고 키즈카페에 들어오는 모습", "kids3": "딸이 흔들목마를 타고 엄마가 옆에서 웃으며 지켜보는 모습", "guest1": "입주민이 소파에서 휴대폰으로 게스트하우스 날짜를 예약하는 모습", "guest2": "손에 든 휴대폰에 메시지가 도착한 모습", "guest3": "입주민이 캐리어를 끌고 게스트하우스 도어락 번호를 누르는 모습", "guest4": "입주민이 조명과 에어컨이 켜진 게스트하우스 객실에 들어서는 모습"};
+    const GEO = {"all": [{"id": "kids", "box": [147.2, 812.4, 697.8, 138.0], "clip": "polygon(653.0px 0.0px,653.0px 67.6px,697.8px 138.0px,17.8px 138.0px,17.8px 28.0px,0.0px 0.0px)", "pts": "653.0,0.0 653.0,67.6 697.8,138.0 17.8,138.0 17.8,28.0 0.0,0.0", "lab": [353.6, 127.4]}, {"id": "golf", "box": [147.2, 662.4, 697.8, 138.0], "clip": "polygon(653.0px 0.0px,653.0px 67.6px,697.8px 138.0px,17.8px 138.0px,17.8px 28.0px,0.0px 0.0px)", "pts": "653.0,0.0 653.0,67.6 697.8,138.0 17.8,138.0 17.8,28.0 0.0,0.0", "lab": [353.6, 127.4]}, {"id": "fitness", "box": [147.2, 512.4, 272.8, 138.0], "clip": "polygon(228.0px 0.0px,228.0px 67.6px,272.8px 138.0px,17.8px 138.0px,17.8px 28.0px,0.0px 0.0px)", "pts": "228.0,0.0 228.0,67.6 272.8,138.0 17.8,138.0 17.8,28.0 0.0,0.0", "lab": [141.1, 127.4]}, {"id": "gx", "box": [402.2, 512.4, 187.8, 138.0], "clip": "polygon(143.0px 0.0px,143.0px 67.6px,187.8px 138.0px,17.8px 138.0px,17.8px 28.0px,0.0px 0.0px)", "pts": "143.0,0.0 143.0,67.6 187.8,138.0 17.8,138.0 17.8,28.0 0.0,0.0", "lab": [98.6, 127.4]}, {"id": "sauna", "box": [572.2, 512.4, 272.8, 138.0], "clip": "polygon(228.0px 0.0px,228.0px 67.6px,272.8px 138.0px,17.8px 138.0px,17.8px 28.0px,0.0px 0.0px)", "pts": "228.0,0.0 228.0,67.6 272.8,138.0 17.8,138.0 17.8,28.0 0.0,0.0", "lab": [141.1, 127.4]}, {"id": "study", "box": [147.2, 362.4, 340.8, 138.0], "clip": "polygon(296.0px 0.0px,296.0px 67.6px,340.8px 138.0px,17.8px 138.0px,17.8px 28.0px,0.0px 0.0px)", "pts": "296.0,0.0 296.0,67.6 340.8,138.0 17.8,138.0 17.8,28.0 0.0,0.0", "lab": [175.1, 127.4]}, {"id": "lounge", "box": [470.2, 362.4, 374.8, 138.0], "clip": "polygon(330.0px 0.0px,330.0px 67.6px,374.8px 138.0px,17.8px 138.0px,17.8px 28.0px,0.0px 0.0px)", "pts": "330.0,0.0 330.0,67.6 374.8,138.0 17.8,138.0 17.8,28.0 0.0,0.0", "lab": [192.1, 127.4]}, {"id": "guest", "box": [120.2, 170, 724.8, 180.4], "clip": "polygon(0.0px 0.0px,680.0px 0.0px,680.0px 110.0px,724.8px 180.4px,44.8px 180.4px,44.8px 70.4px)", "pts": "0.0,0.0 680.0,0.0 680.0,110.0 724.8,180.4 44.8,180.4 44.8,70.4", "lab": [380.6, 169.8]}], "ph": [{"id": "guest", "box": [20.0, 280, 857.6, 470.0], "clip": "polygon(0.0px 0.0px,800.0px 0.0px,800.0px 150.0px,857.6px 470.0px,57.6px 470.0px,57.6px 320.0px)", "pts": "0.0,0.0 800.0,0.0 800.0,150.0 857.6,470.0 57.6,470.0 57.6,320.0", "lab": [452.2, 436.0]}], "f60": [{"id": "study", "box": [20.0, 280, 437.6, 470.0], "clip": "polygon(0.0px 0.0px,380.0px 0.0px,380.0px 150.0px,437.6px 470.0px,57.6px 470.0px,57.6px 320.0px)", "pts": "0.0,0.0 380.0,0.0 380.0,150.0 437.6,470.0 57.6,470.0 57.6,320.0", "lab": [242.2, 436.0]}, {"id": "lounge", "box": [400.0, 280, 477.6, 470.0], "clip": "polygon(0.0px 0.0px,420.0px 0.0px,420.0px 150.0px,477.6px 470.0px,57.6px 470.0px,57.6px 320.0px)", "pts": "0.0,0.0 420.0,0.0 420.0,150.0 477.6,470.0 57.6,470.0 57.6,320.0", "lab": [262.2, 436.0]}], "f50": [{"id": "fitness", "box": [20.0, 280, 357.6, 470.0], "clip": "polygon(0.0px 0.0px,300.0px 0.0px,300.0px 150.0px,357.6px 470.0px,57.6px 470.0px,57.6px 320.0px)", "pts": "0.0,0.0 300.0,0.0 300.0,150.0 357.6,470.0 57.6,470.0 57.6,320.0", "lab": [202.2, 436.0]}, {"id": "gx", "box": [320.0, 280, 257.6, 470.0], "clip": "polygon(0.0px 0.0px,200.0px 0.0px,200.0px 150.0px,257.6px 470.0px,57.6px 470.0px,57.6px 320.0px)", "pts": "0.0,0.0 200.0,0.0 200.0,150.0 257.6,470.0 57.6,470.0 57.6,320.0", "lab": [152.2, 436.0]}, {"id": "sauna", "box": [520.0, 280, 357.6, 470.0], "clip": "polygon(0.0px 0.0px,300.0px 0.0px,300.0px 150.0px,357.6px 470.0px,57.6px 470.0px,57.6px 320.0px)", "pts": "0.0,0.0 300.0,0.0 300.0,150.0 357.6,470.0 57.6,470.0 57.6,320.0", "lab": [202.2, 436.0]}], "f45": [{"id": "golf", "box": [20.0, 280, 857.6, 470.0], "clip": "polygon(0.0px 0.0px,800.0px 0.0px,800.0px 150.0px,857.6px 470.0px,57.6px 470.0px,57.6px 320.0px)", "pts": "0.0,0.0 800.0,0.0 800.0,150.0 857.6,470.0 57.6,470.0 57.6,320.0", "lab": [452.2, 436.0]}], "f1": [{"id": "kids", "box": [20.0, 280, 857.6, 470.0], "clip": "polygon(0.0px 0.0px,800.0px 0.0px,800.0px 150.0px,857.6px 470.0px,57.6px 470.0px,57.6px 320.0px)", "pts": "0.0,0.0 800.0,0.0 800.0,150.0 857.6,470.0 57.6,470.0 57.6,320.0", "lab": [452.2, 436.0]}]};
+    const ACC = '#2340C8';
+    const fac = this.facilities();
+    const sel = this.state.sel;
+    const cur = fac.find((f) => f.id === sel) || fac[0];
+    const step = Math.min(this.state.step, cur.steps.length - 1);
+    const mode = this.state.mode;
+    // ✏️ [C] 층 탭 이름
+    const FLOORS = [['all','전체','전체 층','시설을 눌러 안을 들여다보세요'],['ph','PH','PH','PH · 게스트하우스'],['f60','60F','60F','60F · 스터디카페 · 카페 라운지'],['f50','50F','50F','50F · 피트니스 · GX룸 · 사우나'],['f45','45F','45F','45F · 실내 골프연습장'],['f1','1F','1F','1F · 키즈카페']];
+    const v = {}; v[mode] = true;
+    const fm = FLOORS.find((x) => x[0] === mode) || FLOORS[0];
+    const tabs = FLOORS.map((x) => ({
+      name: x[1], pressed: x[0] === mode ? 'true' : 'false',
+      pick: () => { const first = GEO[x[0]][0].id; const keep = GEO[x[0]].some((g) => g.id === sel); this.setState({ mode: x[0], sel: keep ? sel : first, step: keep ? this.state.step : 0 }); },
+      style: 'min-height:44px;min-width:56px;padding:8px 14px;border-radius:8px;border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:700;' + (x[0] === mode ? 'background:#141A2E;color:#FFFFFF;' : 'background:transparent;color:#3B4358;')
+    }));
+    const hits = GEO[mode].map((g) => {
+      const f = fac.find((x) => x.id === g.id) || fac[0];
+      const on = f.id === sel;
+      return {
+        name: f.name, aria: f.floor + ' ' + f.name + ' 보기', pressed: on ? 'true' : 'false',
+        pick: () => this.setState({ sel: f.id, step: 0 }),
+        w: g.box[2], h: g.box[3], pts: g.pts,
+        boxStyle: 'left:' + g.box[0] + 'px;top:' + g.box[1] + 'px;width:' + g.box[2] + 'px;height:' + g.box[3] + 'px;clip-path:' + g.clip + ';',
+        shapeClass: on ? 'dio-shape dio-glow' : 'dio-shape',
+        shapeStyle: on ? 'fill:' + ACC + ';fill-opacity:.2;stroke:' + ACC + ';stroke-width:4;stroke-linejoin:round;' : 'fill:#FFFFFF;fill-opacity:0;stroke:none;',
+        labStyle: 'position:absolute;left:' + g.lab[0] + 'px;top:' + g.lab[1] + 'px;transform:translate(-50%,-50%);white-space:nowrap;padding:8px 16px;border-radius:999px;font-size:20px;font-weight:700;box-shadow:0 4px 12px rgba(20,26,46,0.18);' +
+          (on ? 'background:' + ACC + ';color:#FFFFFF;' : 'background:#FFFFFF;color:#141A2E;')
+      };
+    });
+    const steps = cur.steps.map((s, i) => {
+      const active = i === step;
+      return {
+        num: i + 1, label: s.label, current: active ? 'step' : 'false',
+        pick: () => this.setState({ step: i }),
+        style: 'flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px 10px;min-height:52px;border-radius:10px;cursor:pointer;font-family:inherit;text-align:left;' +
+          (active ? 'background:' + ACC + ';color:#FFFFFF;border:1px solid ' + ACC + ';' : (i < step ? 'background:#E3F4EB;color:#12603B;border:1px solid #B4DCC6;' : 'background:#FFFFFF;color:#545D72;border:1px solid #DCE1EC;'))
+      };
+    });
+    const s = cur.steps[step];
+    const now = Object.assign({}, s, { img: IMG[s.scene], alt: ALT[s.scene] || s.title });
+    const isFirst = step === 0;
+    const sc = {}; sc[s.scene] = true;
+    const isLast = step === cur.steps.length - 1;
+    const idx = fac.findIndex((f) => f.id === cur.id);
+    const nextFac = fac[(idx + 1) % fac.length];
+    return {
+      hits, steps, cur, now, sc, isFirst, hasPush: !!s.pushTitle, v, tabs, floorTitle: fm[3], floorCode: fm[2],
+      stepNum: step + 1, stepTotal: cur.steps.length,
+      nextLabel: isLast ? nextFac.name + ' 보기' : '다음 단계',
+      prevStyle: 'padding:12px 20px;min-height:48px;border-radius:10px;border:1px solid #CDD4E2;background:#FFFFFF;font-family:inherit;font-size:15px;font-weight:700;' + (isFirst ? 'color:#8A92A6;cursor:default;' : 'color:#141A2E;cursor:pointer;'),
+      prev: () => { if (!isFirst) this.setState({ step: step - 1 }); },
+      next: () => { if (!isLast) this.setState({ step: step + 1 }); else this.setState({ sel: nextFac.id, step: 0 }); }
+    };
+  }
+}
+
+__mountDC(document.querySelector('#lingson-diorama .ld-stage'), document.getElementById('lingson-diorama-tpl'), Component);
+
+(function(){
+  var wrap = document.getElementById('lingson-diorama'), stage = wrap.querySelector('.ld-stage');
+  function fit(){ var s = Math.min(1, wrap.clientWidth / 1440); stage.style.transform = 'scale(' + s + ')'; wrap.style.height = (1100 * s) + 'px'; }
+  window.addEventListener('resize', fit); fit();
+})();
+</script>
+</body></html>
